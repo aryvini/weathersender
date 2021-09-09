@@ -6,5 +6,6 @@
     "collection":"xxxxxxxx",
     "stationId":"xxxxx",
     "stationPwd":"xxxxxx",
-    "update_interval": 5
+    "update_interval": 5,
+    "save_raw_data": true
 }
