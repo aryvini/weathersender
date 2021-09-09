@@ -1,0 +1,7 @@
+workspace.code-workspace
+config.json
+\test
+\rawdata
+\__pycache__
+\.ipynb_checkpoints
+\.virtual_documents

@@ -1,0 +1,10 @@
+{
+
+    "serial_port": "COM8",
+    "connection_string":"mongodb+srv://xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dbname":"xxxxxxx",
+    "collection":"xxxxxxxx",
+    "stationId":"xxxxx",
+    "stationPwd":"xxxxxx",
+    "update_interval": 5
+}
