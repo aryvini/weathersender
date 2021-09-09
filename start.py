@@ -141,6 +141,7 @@ if __name__ == '__main__':
     print('Serial thread has started')
     t.start()
 
+    startdate = datetime.now()
     nextUpdate = datetime.now() + timedelta(minutes=UPDATEINTERVAL)
     while True:
         #Main program here
@@ -174,6 +175,12 @@ if __name__ == '__main__':
 
 
                 nextUpdate = datetime.now() + timedelta(minutes=UPDATEINTERVAL)
+
+            ##zero accumulated daily rain for a new day
+            if((startdate.day - datetime.now().day) < 0):
+                davis.clear_raindaily()
+                startdate=datetime.now()
+                pass
 
 
         except KeyboardInterrupt:

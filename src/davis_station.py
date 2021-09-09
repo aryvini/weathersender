@@ -291,7 +291,9 @@ class Station():
         return print(table)
 
 
-
+    def clear_raindaily(self):
+        self.agg_params['raindaily'] = 0
+        return
 
 
     
