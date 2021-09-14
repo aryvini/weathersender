@@ -57,7 +57,7 @@ class Station():
             'uv':0,
             'solar':0,
             'rain':0,
-            'raindaily':0,
+            #'raindaily':0,
             'rainsecs':0,
             'rssi':0,
             'packets':0,
@@ -101,9 +101,12 @@ class Station():
         self.__process_rain()
 
         agg['tempF'] = round(series['temp'].mean()) if len(series['temp'])>0 else np.nan
-        if agg['tempF'] >=0 :
+        if not pd.isna(agg['tempF']):
+            agg['tempC'] = round((agg['tempF']-32)/1.8,2)
+        else:
+            agg['tempC'] = np.nan
 
-            agg['tempC'] = round((agg['tempF']-32)/1.8)
+        
         
         agg['uv'] = round(series['uv'].mean()) if len(series['uv'])>0 else np.nan
         agg['rh'] = round(series['rh'].mean()) if len(series['rh'])>0 else np.nan
@@ -177,7 +180,7 @@ class Station():
             agg['rain'] = round(diff*Station.RAINBUCKET,2) if len(s['rain'])>0 else np.nan
             agg['rainsecs'] = round(s['rainsecs'].tolist()[-1]) if len(s['rainsecs'])>0 else np.nan
 
-            agg['raindaily'] = round(agg['raindaily']+agg['rain'],2)
+            # agg['raindaily'] = round(agg['raindaily']+agg['rain'],2)
 
     
         else:
@@ -245,13 +248,7 @@ class Station():
     def __clear(self):
         
         #to clear series and aggregate values, call __init__()
-        #before init, save dailyrain otherwise the acumulated value will be lost
-        raindaily = self.agg_params['raindaily']
         self.__init__()
-
-        #pass the stored value again to the dict
-        #the reset of the raindaily accumlated value will be done in the start.py script
-        self.agg_params['raindaily'] = raindaily
 
         return
 
@@ -284,8 +281,8 @@ class Station():
         except:
             validrate = 0
 
-        raindaily = self.agg_params['raindaily']
-        table.add_column('DailyRain',[f'{raindaily:.2f}','--'])
+        # raindaily = self.agg_params['raindaily']
+        # table.add_column('DailyRain',[f'{raindaily:.2f}','--'])
         table.add_column('% valid',[f'{validrate:.2f}','--'])
             
         return print(table)

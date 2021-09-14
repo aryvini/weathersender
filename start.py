@@ -10,12 +10,12 @@ from datetime import datetime,timedelta
 import json
 
 from src.davis_station import Station
-from src.cloud_sender import connect_mongo, send_mongo, send_wu
+from src.cloud_sender import connect_mongo, fetch_rain_data, send_mongo, send_wu
 
 
 
 
-def open_serial(port='COM8'):
+def open_serial(port):
 
     
     serialPort = serial.Serial(port=port, baudrate=115200, bytesize=8, timeout=2, stopbits=serial.STOPBITS_ONE)
@@ -76,7 +76,6 @@ def mongo_upload(data_dict,mongo_collection):
                     'solar',
                     'rain',
                     'rainsecs',
-                    'raindaily',
                     'rssi',
                     'packets',
                     'lostpackets',
@@ -94,10 +93,28 @@ def mongo_upload(data_dict,mongo_collection):
     
 
 def wu_upload(data_dict):
+    #Before upload data to weather underground, fetch rain data from mongo and update the hourly accumulated
+
+    rain_data = fetch_rain_data(mongo_collection)
+    data_dict = {**data_dict,**rain_data}
 
     send_wu(data_dict,config['stationId'],config['stationPwd'])
 
     return
+
+
+#Function to round time
+#copied from https://stackoverflow.com/questions/3463930/how-to-round-the-minute-of-a-datetime-object/10854034#10854034
+def roundTime(dt=None, roundTo=60):
+   """Round a datetime object to any time lapse in seconds
+   dt : datetime.datetime object, default now.
+   roundTo : Closest number of seconds to round to, default 1 minute.
+   Author: Thierry Husson 2012 - Use it as you want but don't blame me.
+   """
+   if dt == None : dt = datetime.now()
+   seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+   rounding = (seconds+roundTo/2) // roundTo * roundTo
+   return dt + timedelta(0,rounding-seconds,-dt.microsecond)
 
 
 
@@ -141,8 +158,9 @@ if __name__ == '__main__':
     print('Serial thread has started')
     t.start()
 
-    startdate = datetime.now()
-    nextUpdate = datetime.now() + timedelta(minutes=UPDATEINTERVAL)
+
+    nextUpdate = datetime.now() + timedelta(minutes=5)
+    nextUpdate = roundTime(nextUpdate,roundTo=5*60)
     while True:
         #Main program here
 
@@ -175,12 +193,13 @@ if __name__ == '__main__':
 
 
                 nextUpdate = datetime.now() + timedelta(minutes=UPDATEINTERVAL)
+                nextUpdate = roundTime(nextUpdate,roundTo=5*60)
 
-            ##zero accumulated daily rain for a new day
-            if((startdate.day - datetime.now().day) < 0):
-                davis.clear_raindaily()
-                startdate=datetime.now()
-                pass
+            # ##zero accumulated daily rain for a new day
+            # if((startdate.day - datetime.now().day) < 0):
+            #     davis.clear_raindaily()
+            #     startdate=datetime.now()
+            #     pass
 
 
         except KeyboardInterrupt:
