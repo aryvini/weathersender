@@ -1,5 +1,6 @@
 import sys
 from numpy.core.shape_base import block
+from paho.mqtt.client import Client
 import serial
 from os import system,path
 import time
@@ -10,7 +11,7 @@ from datetime import datetime,timedelta
 import json
 
 from src.davis_station import Station
-from src.cloud_sender import connect_mongo, fetch_rain_data, send_mongo, send_wu
+from src.cloud_sender import connect_mongo, fetch_rain_data, send_mongo, send_wu,connect_mqtt
 
 
 
@@ -63,6 +64,32 @@ def process_serial(queue):
         return
 
 
+def mqtt_upload(data:dict,client:Client):
+    #select agg valeus of interest to save into db
+
+    keys2store = ['windvKMH',
+                    'windd',
+                    'windgustKMH',
+                    'tempC',
+                    'rh',
+                    'uv',
+                    'solar',
+                    'rain',
+                    'rainsecs',
+                    'rssi',
+                    'packets',
+                    'lostpackets',
+                    'validrate',
+                    ]
+
+    data2send = {x: data[x] for x in data.keys() if x in keys2store}
+    print(data2send)
+    data2send['datetime'] = datetime.utcnow()
+
+    client.publish("weather",json.dumps(data2send))
+
+
+
 def mongo_upload(data_dict,mongo_collection):
 
     #select agg valeus of interest to save into db
@@ -91,7 +118,6 @@ def mongo_upload(data_dict,mongo_collection):
         return
 
     
-
 def wu_upload(data_dict):
     #Before upload data to weather underground, fetch rain data from mongo and update the hourly accumulated
 
@@ -134,6 +160,9 @@ if __name__ == '__main__':
         exit(-12)
 
     mongo_collection = connect_mongo(config['connection_string'],config['dbname'],config['collection'])
+    mqttclient = connect_mqtt(config['mqttserver'],config['mqttuser'],config['mqttpwd'])
+
+
     UPDATEINTERVAL = config['update_interval'] 
 
     
@@ -183,8 +212,12 @@ if __name__ == '__main__':
                 except Exception:
                     print('Error sending to mongo')
 
-                
+                try:
+                    mqtt_upload(aggdata,mqttclient)
+                except Exception:
+                    print('Error sending to mqtt')
 
+            
                 try:
                     wu_upload(aggdata)
                     pass

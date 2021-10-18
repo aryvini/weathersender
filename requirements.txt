@@ -6,4 +6,5 @@ pandas==1.1.3
 numpy==1.19.5
 pyserial==3.5
 dnspython
+paho-mqtt
 # Station==2.0.0

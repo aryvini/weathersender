@@ -5,7 +5,16 @@ import numpy as np
 import requests
 from requests.api import request
 from datetime import datetime, timedelta
+import paho.mqtt.client as mqtt
 
+
+def connect_mqtt(host: str,user:str,pwd:str):
+    client = mqtt.Client('weather-station')
+    client.username_pw_set(user,pwd)
+    
+    client.connect(host,1883,600)
+
+    return client
 
 
 def connect_mongo(string,db_name,collection_name):
