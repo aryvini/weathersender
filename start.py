@@ -203,7 +203,7 @@ if __name__ == '__main__':
 
             davis.print_latest_data()
             time.sleep(2)
-            system('cls')     
+            system('clear')     
 
 
             if(datetime.now()>nextUpdate):
