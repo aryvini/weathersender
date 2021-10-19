@@ -84,7 +84,7 @@ def mqtt_upload(data:dict,client:Client):
 
     data2send = {x: data[x] for x in data.keys() if x in keys2store}
     print(data2send)
-    data2send['datetime'] = datetime.utcnow()
+    data2send['datetime'] = datetime.utcnow().isoformat()
 
     info = client.publish("weather",json.dumps(data2send))
     print(info.rc)
