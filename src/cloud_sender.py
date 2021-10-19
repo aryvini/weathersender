@@ -9,12 +9,20 @@ import paho.mqtt.client as mqtt
 
 
 def connect_mqtt(host: str,user:str,pwd:str):
-    client = mqtt.Client('weather-station')
+    client = mqtt.Client('weather-station',clean_session=True)
     client.username_pw_set(user,pwd)
-    
-    client.connect(host,1883,600)
 
-    return client
+    info = client.connect(host,port=1883,keepalive=600)
+    
+    if info == mqtt.MQTT_ERR_SUCCESS:
+        print('connected to mqtt broker!!')
+        client.loop_start()
+        return client
+    else:
+        print("Failed to connect to mqtt, error:")
+        print(info)
+        return None
+
 
 
 def connect_mongo(string,db_name,collection_name):
